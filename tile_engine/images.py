@@ -32,4 +32,4 @@ def load_image(name, extension = 'png', colorkey = -1):
         if colorkey is -1:
             colorkey = image.get_at((0,0))
         image.set_colorkey(colorkey, pg.RLEACCEL)
-    return image, colorkey
+    return image
