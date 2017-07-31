@@ -40,10 +40,6 @@ class Point():
         """  the distance to another coordinate """
         return math.sqrt((other[0] - self.x)**2 + (other[1] - self.y)**2)
 
-    def angle_deg(self, other=(0.0, 0.0)):
-        """ the angle with respect to another coordinate, in degrees """
-        return 180.0 / math.pi * self.angle_rad(other)
-
     def angle_rad(self, other=(0.0, 0.0)):
         """ the angle with respect to another coordinate, in radians """
         return math.atan2(self.y - other[1], self.x - other[0])
@@ -87,14 +83,15 @@ class Point():
 
 def lines(s, points, color, width):
     points = [(int(p.x), int(p.y)) for p in points]   
-    pg.draw.aalines(s, color, True, points, 1)
+    pg.draw.aalines(s, color, False, points, 1)
     
 class DecoratedCircularTile(object):
     nb_sides = 12
     
     def __init__(self, radius = 200. , arc_radius = 60., 
                 n_sampling = 80, order = 10,
-                color_key = (255, 127, 0)):
+                color_key = (255, 127, 0),
+                r_scale =  1 / sqrt(2)):
         self.color_key = color_key
         self.radius = radius
         self.arc_radius = arc_radius
@@ -103,6 +100,8 @@ class DecoratedCircularTile(object):
         self.dtheta = 2 * pi / self.nb_sides
         self.theta0s = [k*self.dtheta/order for k in range(order)]
         
+        self.r_scale = r_scale
+           
         
         self.define_points()
         self.gen_surface()
@@ -122,7 +121,7 @@ class DecoratedCircularTile(object):
             dx, dy = base_points[1] - base_points[0]
             side = sqrt(dx**2 + dy**2)
             print side
-            d = sqrt(R2**2 - (side / 2)**2) / sqrt(2)
+            d = sqrt(R2**2 - (side / 2)**2) * self.r_scale
             centers_for_arcs = [p0 + (R+d) * Point(cos(a), sin(a)) for a in [ i* dtheta + dtheta/2 + theta0 for i in range(N)]]
             
             # all points:
@@ -135,7 +134,7 @@ class DecoratedCircularTile(object):
                 start_angles += [atan2(ys - yc,xs - xc)]
                 finish_angles += [atan2(yf - yc,xf - xc)]
 
-            points = []
+            # points = []
             for i in range(N):
                 start_angle = start_angles[i]
                 finish_angle = finish_angles[i]
@@ -143,12 +142,14 @@ class DecoratedCircularTile(object):
                     finish_angle -= 2*pi
                 center = centers_for_arcs[i]
                 dtheta_arc = (finish_angle - start_angle) / (self.nb_sampling)
+                arc_points = []
                 for k in range(self.nb_sampling+1):
                     a = start_angle + k *dtheta_arc
                     p = center + R2 * Point( cos(a), sin(a) )
-                    points += [p]
+                    arc_points += [p]
+                self.list_points += [arc_points]
                 
-            self.list_points += [points]
+            # self.list_points += [points]
         # self.centers_for_arcs = centers_for_arcs
         # self.base_points = base_points
        
@@ -182,7 +183,7 @@ if __name__ == '__main__':
     background.fill([60,197,255])
     clock = pg.time.Clock()
     
-    tile = DecoratedCircularTile()
+    tile = DecoratedCircularTile(  arc_radius = 60., order = 12)
 
     while 1:
         
