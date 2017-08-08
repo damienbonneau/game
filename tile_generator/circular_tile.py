@@ -1,85 +1,6 @@
 import pygame as pg
-from math import pi, cos, sin, atan2,sqrt
-import math
-
-class Point():
-    def __init__(self,x, y):
-        self.x = x
-        self.y = y
-    
-    def __getitem__(self, index):
-        if index == 0: return self.x
-        if index == 1: return self.y
-        raise IndexError("Point type only supports index 0 and 1")
-
-    def __setitem__(self, index, value):
-        if index == 0:
-            self.x = value
-        elif index == 1:
-            self.y = value
-        else:
-            raise IndexError("Point type only supports index 0 and 1")
-        return
-
-    def __iter__(self):
-        for index in range(2):
-            yield self[index]
-    
-    def __str__(self):
-        return "(" + str(self.x) + "," + str(self.y) + ")"
-
-    def __eq__(self, other):
-        return (other != None) and (abs(self[0] - other[0]) < 10e-10) and (
-            abs(self[1] - other[1]) < 10e-10)
-
-    def __ne__(self, other):
-        return (other == None) or (abs(self[0] - other[0]) > 10e-10) or (
-            abs(self[1] - other[1]) > 10e-10)
-
-    def distance(self, other):
-        """  the distance to another coordinate """
-        return math.sqrt((other[0] - self.x)**2 + (other[1] - self.y)**2)
-
-    def angle_rad(self, other=(0.0, 0.0)):
-        """ the angle with respect to another coordinate, in radians """
-        return math.atan2(self.y - other[1], self.x - other[0])
-
-    def __iadd__(self, other):
-        self.x += other[0]
-        self.y += other[1]
-        return self
-
-    def __add__(self, other):
-        return Point(self.x + other[0], self.y + other[1])
-
-    def __isub__(self, other):
-        self.x -= other[0]
-        self.y -= other[1]
-        return self
-
-    def __sub__(self, other):
-        return Point(self.x - other[0], self.y - other[1])
-
-    def __neg__(self):
-        return Point(-self.x, -self.y)
-
-    def __imul__(self, other):
-        self.x *= other
-        self.y *= other
-        return self
-
-    def __mul__(self, other):
-        return Point(self.x * other, self.y * other)
-    
-    def __rmul__(self, other):
-        return Point(self.x * other, self.y * other)
-        
-    def __repr__(self):
-        return "({}, {})".format(self.x, self.y)
-
-    def __abs__(self):
-        return math.sqrt(abs(self.x)**2 + abs(self.y)**2)
-
+from point import Point
+from math import cos, sin, sqrt, pi, atan2
 
 def lines(s, points, color, width):
     points = [(int(p.x), int(p.y)) for p in points]   
@@ -90,7 +11,7 @@ class DecoratedCircularTile(object):
     
     def __init__(self, radius = 200. , arc_radius = 60., 
                 n_sampling = 80, order = 10,
-                color_key = (255, 127, 0),
+                color_key = (255, 0, 127),
                 r_scale =  1 / sqrt(2)):
         self.color_key = color_key
         self.radius = radius
@@ -134,7 +55,7 @@ class DecoratedCircularTile(object):
                 start_angles += [atan2(ys - yc,xs - xc)]
                 finish_angles += [atan2(yf - yc,xf - xc)]
 
-            # points = []
+
             for i in range(N):
                 start_angle = start_angles[i]
                 finish_angle = finish_angles[i]
@@ -148,11 +69,27 @@ class DecoratedCircularTile(object):
                     p = center + R2 * Point( cos(a), sin(a) )
                     arc_points += [p]
                 self.list_points += [arc_points]
+    
+    def fill_color_key(self):
+        r0 = int(self.radius)
+        a = int(2 * self.radius)
+        x0 = self.width/2
+        y0 = self.height/2
+        for y in range(int(self.height)):
+            dx2 = r0**2 - (y-y0)**2
+            
                 
-            # self.list_points += [points]
-        # self.centers_for_arcs = centers_for_arcs
-        # self.base_points = base_points
-       
+            
+            if dx2>=0:
+                dx = int(x0 - sqrt(dx2))
+                
+                for x in range(0, dx)+range(int(self.width-dx),int(self.width)):
+                    self.surface.set_at((x,y),self.color_key)
+                        
+            else:
+                for x in range(int(self.width)):
+                    self.surface.set_at((x,y),self.color_key)
+                    
     def gen_surface(self):
         bg_color = (125,125,125)
         color = (0,0,0)
@@ -163,7 +100,8 @@ class DecoratedCircularTile(object):
         # lines(s, self.base_points, (0,0,255), 1)
         # lines(s, self.centers_for_arcs, (255,0,0), 1)
         self.surface = s
-    
+        self.fill_color_key()
+        
     def get_surface(self):
         return self.surface
     
