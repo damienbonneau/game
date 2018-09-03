@@ -11,7 +11,12 @@ class World(object):
         self.plans = []
         for o in objects:
             self.add_object(o)        
-        
+     
+    def tick(self):
+        for l in self.objects.values():
+            for entity in l:
+                entity.tick()
+    
     def select_at(self, position):
         plans = self.plans[:]
         plans.reverse()

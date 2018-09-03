@@ -1,0 +1,259 @@
+
+You are at the head of an influent family in middle-age settings. 
+
+
+
+# Turn
+
+4 actions per turn
+Actions are represented by tokens sharing a common face and where the other face represents the action. 
+Each town has an action stack. 
+Taking turns, each player places a single action on the top of any town stack (like in the Starcraft Boardgame). 
+Once players cannot place any action anymore, then they take turn unstacking an action from the top of a pile.
+
+On top of that each action may consume some additional resources such as influence and action points.
+
+Each turn starts with a pool of action points to share among all the actions being taken within the turn.
+The baseline is 4 Action points per turn, but this may be altered with some building special abilities.
+
+At the end of each turn, AFTER the city adjusts its economy balance (gains and losses), gain some gold (taken from the town's treasuries) based on the influence in the town.
+(probaly need to use a sub-linear scale here)
+
+Types of actions:
+1 - Deploy an agent
+2 - move an agent
+3 - activate an agent
+4 - activate a city ability 
+5 - relocalte yourself
+
+Each action has an AP cost and sometimes an influence cost.
+
+1 - Deploying an agent
+An agent may be deployed only in a city where you have at least two influence.
+The deployment cost is 1 AP per lvl. The AP cost may be reduced (but not below 1AP) by paying 3 Influence points per AP.
+
+2 - Move an agent
+You may move an agent from a city to an adjacent one for 1 AP.
+You may not activate an agent which has moved during the turn. 
+You may not move an agent which has been deployed during the turn.
+However, you may activate an agent and then move it. 
+
+3 - activating an agent
+
+Agents with intrigue capabilities are normally placed face down, only showing their level, but not their abilities. 
+By activating an agent, you flip the agent face up. Apply any triggered effect and then benefit from his influence bonus.
+
+4 - activating a city ability
+Some cities have abilities which may be activated at some cost once some conditions are fulfilled. The activation cost is specified on the city cards.
+
+5 - relocate yourself
+At the cost of 3AP, move to a neighbouring city, friendly (4+ influence) to your family
+
+End of turn: Gather influence based on the conditions in each city.
+
+# Activating agents - triggered events
+
+## Plot - Intrigue
+As soon as an agent with a non-zero intrigue is revealed, an intrigue fight happens.
+After all the actions of the turn have been performed, sum the total number of intrigue points, this provides the 'Intrigue strength' for the attacking player. 
+Your opponent gets a chance to reveal immediately some of his followers at a cost of one action per follower (deducted from his next turn). 
+She also adds the total number of already revealed agent with at least one intrigue point (only the number of agents not the intrigue points.
+Having been revealed, they are less efficient) This provides the 'Intrigue strength' for the defending player.
+In case of equality, nothing happens, otherwise whoever lost must remove a total number of agent lvl equal to the difference.
+
+Example
+Player1 reveals 2 agents each with 2 Intrigue for a total of four. 
+After P1 finishes her remaining actions, Player2 chooses to reveal 1 Agent with intrigue 1. She also have another pre-revealed lvl2 agent with intrigue 2. This adds +1 for the agent. 4 - 2 = 2  =>
+P2 has to remove a total of 2 lvl of agents. She chooses to retreat her lvl 2 agent.
+
+## Assassination
+If a player P1 activates an assassin, she may choose a valid target (depending on the assassin lvl). The target is removed from the city as well as the assassin (who vanishes).
+If the other player P2 has a spy and if the spy lvl is sufficient, she may immediately activate the spy at no cost to target the assassin. In that case, P1's agents must leave the city immediately to a neighbouring friendly city. The city special abilities (building or personalities) may not be activated by this player until the end of the game. The assassination still take place.
+
+
+
+# Unofficial business Agent abilities
+## Great plotter 
+If you are the attacker and win the intrigue challenge. You choose which followers retreat back instead of the defender.
+
+## Fast
+This agent may perform the move action twice per turn 
+
+
+# City abilities
+*Deep network* May move an agent and activate it in the same turn. Only use once per turn. You still need to use two actions in total.
+
+*Counter intelligence* Your opponent may not deploy agents in this city 
+
+# Agent types
+
+Agents each have an influence score. As long as they remain in a city, they add their influence to the total amount of influence you exert on that city.
+
+## Official business
+
+### Trader
+ * Upon activation:
+    1) may pay X AP and X gold to purchase up to A*X goods in the city where the trader is. A is the Tier of the trader.     
+    2) You then select a road to the city of your choice where the goods should be sent to.
+        Alternately, you may select a building site in a city
+    
+    Note: Each turn, the goods will move by one city towards their final destination. Sometimes, crossing a town involves paying taxes, these are automatically discounted
+    from your stash.
+
+### Bulk trader
+    1) pay 2 AP and X gold to purchase up to X goods of a given single type in the city
+    2) same as trader
+
+## Expert bulk trader
+    1) pay 1 AP and X-1 gold to purchase up to X goods of a given single type in the city. Minimum gold to pay is 1.
+    2) same as trader
+    
+### Architect
+ * Upon activation:
+    Starts the construction of a selected building 
+    Assign a number of workers from the city to this construction
+ Each turn, X resources from the city are used towards finishing the construction where X is the number of workers.
+ If no resources are available, the construction remains idle until resources become available again.
+ 
+ Tier I architechs are limited to basic buildings
+ Tier II have also access to advance buildings
+ Tier III may also build extra-ordinary bulidings too such as fortresses, cathedral...
+   
+## Officious business
+### Spy
+
+ * Tier I: may be used to reveal a given Tier II card or or any number of Tier I cards on the same city. Then return the spy to its owner's hand.
+ * Triggered effect: upon entry of a <=Tier II agent in the city, may be used to reveal this agent.
+
+
+
+### Assassin
+
+### Saboteur
+
+
+Buildings have either passive, or active abtilies which can be triggered.
+
+## Stable
+Once per turn, for 1 AP, you may move an agent from this city to another city within distance 2 of this city. 
+
+## Gate
+Once per turn, may prevent the entry of a given agent paying its level as influence cost.
+
+## Pigeonnier Communication tower (pigeons):
+ * Pay 1 AP
+ Activate the ability of up to two personalities each in any neighbouring cities 
+
+## Bridge
+Some towns cross rivers or otherwise impractical regions. These towns have bridges which can only be crossed by paying an access.
+The price to move goods or agents through the bridge depends on the influence you have on this town:
+ 0 influence: 1 Gold per good
+ >=2; <=4: 1 gold per two goods
+ >4: 0 gold
+
+## Quarry
+Produces stone
+
+## Vineyard
+Produces wine
+
+## Field
+Produces grain
+
+## Forest exploitation
+Produces wood
+
+## Oven
+Transforms 2X grain and X water in 2X bread 
+
+## Public bath
+Consumes one water: prosperity +1 next turn
+(consume up to two water)
+ 
+## Market
+Market with limited resources replenished at the end of each turn.
+A la PowerGrid.
+ 
+ 
+# Building with architect
+Activating an architect in a city allows for starting the contruction of one of the buildings which are on the governor's list. 
+
+## Governor types
+ * Some governors allow for building anything available for building in their city.
+ * Other governors have a strict list of buildings they want to build before anything else.
+    - Pick a building, this will add a building site owned by the player who owns the architect
+    - A new building will then be added to the list
+
+## Building bonuses    
+ * Upon completion, each building provides specific bonuses to the player owning the building site
+ * During the construction, any player providing construction materials to the building site are also rewarded depending on the building.
+  (e.g gold, influence )
+
+### Religious buildings
+ * Chapel
+ * Church 
+ * Cathedral
+ 
+ * Monastery 
+    - Monks provide various expertise 
+    
+### Economy
+ * Resource extraction
+    - quarry
+    - Forest exploitation
+    
+ * Construction
+    - stone mason
+    - carpenter
+    
+ * Market
+ 
+ 
+### Infrastructures
+ * Puits
+ * Citerne (recuperation des eaux pluviales; socle granite)
+ * Moulin 
+ * Cellier
+ * Grenier
+ * Four a pain
+ * Bains publics
+ 
+### Defense
+ * Wall 
+ * Gate
+ 
+
+## Advise on trading
+
+### Trade with a given city 
+###
+
+
+
+# Town and city evolution
+Each turn, a town / city gains inhabitants based on its prosperity and current population. 
+
+If the population and prosperity reaches a given threshold, 
+the town evolves. Typically this unlocks buildings, building sites, brings new personalities to the city and allow for a higher 
+total number of workers in the city.
+
+ * Village
+ * Small town
+ * Large town
+ * Small city
+ * Large city 
+ * Capital city (?)
+ 
+ 
+# Governor's ability: Worker placement
+ * activated ability. Activation condition: player has at least 2 influence on the city. If two or more player have influence on the city, 
+ the player can activate it only if she has strictly more influence on this city than any other.
+
+
+# Religious buildings 
+# Cathedral:
+ When placing a cathedral, aqcuire a new agent for free. It's an Eveque with influence 3. 
+ +1 influence on nearby cities.
+ +2 influence on the city where the cathedral has been built
+ 
+ 

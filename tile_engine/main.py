@@ -76,6 +76,8 @@ def main_loop(world, screen, screen_size):
         screen.blit(main_surface, (0,0))
         pg.display.flip()
         
+        world.tick()
+        
 def init_pg():
     pg.init()
     screen_sizes = pg.display.list_modes()
@@ -98,10 +100,14 @@ if __name__ == "__main__":
     N = M = 40
     r = hex.get_rect()
     w, h = r.width, r.height
-    hexmap = [Hex(position = (i *w*0.75, (j+ 0.5* (i%2))*h), plan = 1) for i in range(N) for j in range(M)]
+    
+    hexmap = [Hex(position = (i *w*0.75, (j+ 0.5* (i%2))*h), plan = 1) 
+        for i in range(N) for j in range(M)
+    ]
     
     tanks = [Tank(
-    position = (i *w*0.75 + 10, (j+ 0.5* (i%2))*h- 10), plan = 2) for i,j in [(4,6),(1,1), (2,3)]
+        position = (i *w*0.75 + 10, (j+ 0.5* (i%2))*h- 10), plan = 2) 
+        for i,j in [(4,6),(1,1), (2,3)]
     ]
     
     world = World(objects = hexmap + tanks )
