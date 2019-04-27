@@ -27,6 +27,9 @@ class Camera(object):
     def pix_to_position(self, pos):
         return [a0 + a for a,a0 in zip(self.get_position(), pos)] 
     
+    def center_view(self, pos):
+        self.rect.center = pos 
+    
     def reset(self):
         self.rect.move_ip((-self.rect.x, - self.rect.y))
     
