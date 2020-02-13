@@ -1,0 +1,51 @@
+Spacebloutch:
+
+Launch shuttles with Bloutchs onboard towards space stations to investigate 
+or capture them.
+
+
+
+Once in the station Bloutchs act without direct player control. 
+The player however chooses which type of Bloutch to deploy and where.
+
+Each bloutch has a combination of genetic background, training and equipment.
+
+
+# Genetic background:
+
+## Eyes
+- Standard: Two eyes
+- 3 Eyes: enhanced precision
+- 4 eyes: a pair on the front, one on the back
+- The fly: can see at 360 Degrees
+
+## Body
+- Standard: medium size
+- Small: moves faster, harder to hit, restriction on equipment
+- Large: moves slower, easier to hit, can carry big equipment
+
+# Training
+
+## None
+Will just walk around without any kind of awareness for threats
+
+## Basic
+Can use a gun, and will do basic checks for enemies on corridors
+
+## Commando
+This bloutch will use cover and do cool and effective moves against the enemy
+
+## Sharp shooter
+Restricted on the guns they use but very very accurate. 
+Careful progression.
+Use cover efficiently.
+
+# Order types
+
+## Standard progression
+
+## Run Run!!
+
+## Roll and destroy
+Only for blouthes with bit proper armor. Use the excess kinetic energy 
+of the shuttle to roll in the station, taking down some walls and enemies.

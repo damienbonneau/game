@@ -2,18 +2,34 @@ import pygame as pg
 from point import Point
 from math import cos, sin, sqrt, pi, atan2
 
+
+crimson = (196, 28, 23)
+crimson_dark = (150, 21, 18)
+black = (0,0,0)
+grey_dark = (50,50,50)
+blue = (0, 50, 168)
+blue_dark = (0, 31, 106)
+
+
 def lines(s, points, color, width):
     points = [(int(p.x), int(p.y)) for p in points]   
     pg.draw.aalines(s, color, False, points, 1)
+
     
 class DecoratedCircularTile(object):
-    nb_sides = 12
     
-    def __init__(self, radius = 200. , arc_radius = 60., 
+    def __init__(self, radius = 200. , 
+                arc_radius = 60., 
+                nb_sides = 12,    
                 n_sampling = 80, order = 10,
                 color_key = (255, 0, 127),
+                background_color = grey_dark,
+                line_color = black,
                 r_scale =  1 / sqrt(2)):
         self.color_key = color_key
+        self.nb_sides = nb_sides    
+        self.background_color = background_color
+        self.line_color = line_color
         self.radius = radius
         self.arc_radius = arc_radius
         self.nb_sampling = n_sampling 
@@ -91,12 +107,12 @@ class DecoratedCircularTile(object):
                     self.surface.set_at((x,y),self.color_key)
                     
     def gen_surface(self):
-        bg_color = (125,125,125)
-        color = (0,0,0)
+        bg_color = self.background_color
+        color = self.line_color
         s = pg.Surface((int(self.width), int(self.height)))
         s.fill(bg_color)
         for points in self.list_points:
-            lines(s, points, (0,0,0), 12)
+            lines(s, points, color, 12)
         # lines(s, self.base_points, (0,0,255), 1)
         # lines(s, self.centers_for_arcs, (255,0,0), 1)
         self.surface = s
@@ -121,7 +137,7 @@ if __name__ == '__main__':
     background.fill([60,197,255])
     clock = pg.time.Clock()
     
-    tile = DecoratedCircularTile(  arc_radius = 60., order = 12)
+    tile = DecoratedCircularTile(  arc_radius = 20., order = 4, nb_sides = 36)
 
     while 1:
         

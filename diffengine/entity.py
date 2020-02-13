@@ -1,6 +1,13 @@
 from images import load_image, highlight_surface
 import pygame as pg
 
+import sys
+
+def _print(*a, **kw):
+    print(*a, **kw)
+    sys.stdout.flush()
+    
+
 class Entity(object):
     '''
     An object in the world:
@@ -68,56 +75,62 @@ class Entity(object):
 
 
 class InputBox(Entity):
-
-    def __init__(self, x, y, w, h, text=''):
-        self.COLOR_INACTIVE = pg.Color('lightskyblue3')
-        self.COLOR_ACTIVE = pg.Color('dodgerblue2')
+    def __init__(self, x, y, w, h, text='', plan=1):
+        self.COLOR_INACTIVE = pg.Color('darkgreen')
+        self.COLOR_ACTIVE = pg.Color('green')
+        self.COLOR_BORDER = pg.Color('gray21')
         self.color = self.COLOR_INACTIVE
-        self.FONT = pg.font.Font(None, 32)
-    
-        rect = pg.Rect(x, y, w, h)
-        txt_surface = self.FONT.render(text, True, self.color)
-        super(InputBox, self).__init__(surface = txt_surface,
+        self.FONT = pg.font.Font(None, 16)
+        position = (x, y)
+        rect = pg.Rect(0, 0, w, h)
+        self.bbrect = pg.Rect(0, 0, w, h)
+        self.txt_surface = self.FONT.render(text, True, self.color)
+        surface = pg.Surface((w, h))
+        
+        super(InputBox, self).__init__(surface = surface,
                                         rect = rect,
                                         position = position, plan = plan
                                         )
     
+        self.color = self.COLOR_INACTIVE
         self.text = text
         self.active = False
+        self.update_surface()
 
     def activate(self):
         super(InputBox, self).activate()
         self.color = self.COLOR_ACTIVE 
+        self.update_surface()
+        _print('activate', self.active)
         
     def deactivate(self):
         super(InputBox, self).deactivate()
         self.color = self.COLOR_INACTIVE
+        self.update_surface()
 
     def handle_event(self, event):       
         if event.type == pg.KEYDOWN:
             if self.active:
                 if event.key == pg.K_RETURN:
-                    print(self.text)
-                    self.text = ''
+                    _print(self.text)
+                    
                 elif event.key == pg.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
-                # Re-render the text.
-                self.txt_surface = FONT.render(self.text, True, self.color)
+                    
+                self.update_surface()
 
+    def update_surface(self):
+        surface = pg.Surface((self.rect.width, self.rect.height))
+        self.txt_surface = self.FONT.render(self.text, True, self.color)
+        surface.blit(self.txt_surface, (5, 5))
+        pg.draw.rect(surface, self.COLOR_BORDER, self.bbrect, 1)
+        self.set_surface(surface)
+        
     def update(self):
-        # Resize the box if the text is too long.
-        width = max(200, self.txt_surface.get_width()+10)
-        self.rect.w = width
+        pass
 
-    def draw(self, screen):
-        # Blit the text.
-        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
-        # Blit the rect.
-        pg.draw.rect(screen, self.color, self.rect, 2)
-
-                
 class ImageEntity(Entity):
     name = None
     extension = 'png'

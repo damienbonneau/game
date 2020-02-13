@@ -8,7 +8,7 @@ from pygame.locals import *
 #import pygl2d and math
 import sys; sys.path.insert(0, "..")
 #import pygl2d
-from numpy import *
+import numpy as np
 MOUNTAIN = 3
 ROCKS = 2
 PLAIN = 1
@@ -20,7 +20,9 @@ SIDE = 35.
 HSTEP = SIDE*(1+SIN30)
 VSTEP = SIDE*2*SIN60
 
-
+def _print(*a, **kw):
+    print(*a, **kw)
+    sys.stdout.flush()
 
 # Hexagonal tile
 class HexTile(object):
@@ -66,7 +68,7 @@ class HexTile(object):
         pygame.draw.lines(surf, [0,0,0],True, pts,2)
     
     def printDbgInfo(self):
-        print self.position
+        _print (self.position)
     
 # Board storing all the hexagonal tiles        
 class Board(object):
@@ -75,8 +77,8 @@ class Board(object):
         self.width = width
         self.height = height
         self.hexs = {}
-        for j in arange(height):
-            for i in arange(width):
+        for j in np.arange(height):
+            for i in np.arange(width):
                 h = HexTile()
                 h.setFont(pygame.font.SysFont("Courier New", 16, bold=True))
                 h.setTextCoord("(%d,%d)" %(i,j)) # Set default text to be coordinate
@@ -93,14 +95,14 @@ class Board(object):
         for i in range(N):
             dj0 = 0
 
-            print len_col
+            _print (len_col)
             for j in range(1,len_col+1):
                 h = HexTile()
                 h.setFont(pygame.font.SysFont("Courier New", 16, bold=True))
                 h.setTextCoord("(%d,%d)" %(i,j)) # Set default text to be coordinate
                 pos =(i ,j + j0 + dj0)
                 self.setHex(h,pos)
-                print  "    ", pos
+                print  ("    ", pos)
                 
             if i < size -1:
                 len_col += 1
@@ -135,12 +137,12 @@ class Board(object):
         dx_text,dy_text = HSTEP*self.scale / 2,VSTEP*self.scale / 2
         i_min,i_max,j_min,j_max = sub_board_boundaries
         if i_min % 2 == 0:
-            a_even_i = arange(i_min,i_max,step = 2)
-            a_odd_i = arange(i_min+1,i_max,step = 2)
+            a_even_i = np.arange(i_min,i_max,step = 2)
+            a_odd_i = np.arange(i_min+1,i_max,step = 2)
         else:
-            a_even_i = arange(i_min+1,i_max,step = 2)
-            a_odd_i = arange(i_min,i_max,step = 2)
-        a_js = arange(j_min,j_max) 
+            a_even_i = np.arange(i_min+1,i_max,step = 2)
+            a_odd_i = np.arange(i_min,i_max,step = 2)
+        a_js = np.arange(j_min,j_max) 
         
         for i in a_even_i: 
             for j in a_js:
@@ -161,7 +163,7 @@ class Camera(object):
     def __init__(self,screen_size,board):
         self.board = board
         self.camera_speed = 12.5
-        self.position = array([0,0])
+        self.position = np.array([0,0])
         self.scale = 1.0
         self.screen_size = screen_size
         self.scales = [0.5, 1.0, 2.0, 4.0]
@@ -210,26 +212,25 @@ class Camera(object):
         ypix -= self.position[1]
         
         # First get integer X
-        x_hex = floor(xpix/hstep)
+        x_hex = np.floor(xpix/hstep)
         if x_hex%2 ==0 :
-            y_hex = floor(ypix/vstep)
+            y_hex = np.floor(ypix/vstep)
         else:
-            y_hex = floor(ypix/vstep-0.5)
+            y_hex = np.floor(ypix/vstep-0.5)
         
         dx = xpix-x_hex*hstep
         dy = ypix-y_hex*vstep
         
         if dy< (side*SIN30-dx)*SIN60/SIN30:
-            print "x-1 ; y-1"
+            _print ("x-1 ; y-1")
             x_hex-=1
             y_hex-=1
         elif dy>dx/SIN30+hstep/2:
-            print "x-1 "
+            _print ("x-1 ")
             x_hex-=1
         x_hex = int(x_hex)
         y_hex = int(y_hex)
-        print (dx,dy),(dy,dx/SIN30), "->" , (x_hex,y_hex )
-        #print (x_hex,y_hex), self.board.getHex(x_hex,y_hex).printDbgInfo()
+        _print ( (dx,dy),(dy,dx/SIN30), "->" , (x_hex,y_hex ))
         return x_hex,y_hex    
         
     def draw(self):
@@ -239,12 +240,12 @@ class Camera(object):
         hex_width = HSTEP * self.scale
         hex_side = SIDE * self.scale
         # self.hex_side = hex_side
-        min_i = int(max(0,floor(self.position[0]/(hex_width)-1)))
-        max_i = int(min(board_width,(ceil(self.position[0]+screen_width)/(hex_width)+1)))
+        min_i = int(max(0,np.floor(self.position[0]/(hex_width)-1)))
+        max_i = int(min(board_width,(np.ceil(self.position[0]+screen_width)/(hex_width)+1)))
         
-        min_j = int(max(0,floor(-self.position[1]/hex_height)-1))
-        #min_j = int(floor(-self.position[1]/hex_height)-1)
-        max_j = int(min(board_height,ceil((-self.position[1]+screen_height)/hex_height)+1))
+        min_j = int(max(0,np.floor(-self.position[1]/hex_height)-1))
+        #min_j = int(np.floor(-self.position[1]/hex_height)-1)
+        max_j = int(min(board_height,np.ceil((-self.position[1]+screen_height)/hex_height)+1))
         
         sub_board_boundaries = [min_i,max_i,min_j,max_j]
         self.sub_board_boundaries = sub_board_boundaries
@@ -254,13 +255,12 @@ class Camera(object):
         self.board.draw(self.surface,[-self.position[0],self.position[1]],sub_board_boundaries)
 
     def print_dbg(self):
-        print self.position
-        print self.sub_board_boundaries
-        print 
+        _print (self.position)
+        _print (self.sub_board_boundaries)
+        _print ()
         
 def main():
     
-    print "init..."
     #init pygl2d
     SCREEN_WIDTH,SCREEN_HEIGHT = 1024,500
     SCREEN_SIZE = [SCREEN_WIDTH, SCREEN_HEIGHT]
@@ -277,7 +277,6 @@ def main():
     
     font = pygame.font.SysFont("Courier New", 32, bold=True)
 
-    print "starting loop..."
     while 1:
         
         dt = clock.tick(30.0) / 30.0
@@ -295,13 +294,11 @@ def main():
                     pos = pygame.mouse.get_pos()
                     cam.Pix2Hex( pos)
                 elif e.button == 4 : #Wheel-UP
-                    print "Wheel up"
                     cam.zoomIn()
                 elif e.button == 5 : #Wheel-down
-                    print "Wheel down"
                     cam.zoomOut()
                 else:
-                    print "click %d" % e.button       
+                    _print ("click %d" % e.button )
 					
 		# Move the camer
         key = pygame.key.get_pressed()
@@ -315,7 +312,7 @@ def main():
            cam.moveDown(dt)
         
         if key[K_TAB]:
-            print cam.print_dbg()
+            _print (cam.print_dbg())
         
         #######################
         #### BEGIN DRAWING ####

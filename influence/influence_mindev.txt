@@ -1,0 +1,183 @@
+EoT: end of turn
+
+# Game dev
+ 
+# Dev Phase 0
+
+## Features
+ - Game menu
+ - Only "scenario" mode: 
+    - Game room with map selection
+    
+ - Launch a game with a dummy AI (which for now can only place random actions)
+ - In game: 
+    Display the map
+    
+    Turn phases:
+    Phase 1
+        Supply 4 actions to each player
+        Players place actions on city stacks (a la Starcraft)
+    
+    Phase 2
+        Players unstack the actions in turn and execute it.
+        
+    End Of Turn
+        Apply end of turn effects
+        Change starting player for next turn
+
+    
+## Actions
+ - dummy action only for now (nothing happens when unstacked)
+ 
+# Dev Phase 1
+
+## Actions
+ - move action:
+    When unstacking the move action:
+        1) You may move any agent in the current city to any neighbouring city
+        2) You may then move any agent from any neighbouring city to this city
+        
+ - activate personality abilities
+ 
+ - activate agent
+    - activate architect
+    
+## Agents
+ - Architect
+    Cost 3 Gold 
+    Can start a building site in a town if the building 
+    is on the city planning of the governor.
+
+## Buildings
+
+ * Small grain silo 
+ * Small warehouse
+ * Small church
+ * Mill
+ * Oven
+ * Well
+ * Cellar
+
+### Small warehouse
+Cost 1 wood
+Stores up to a total of 2 construction resources (wood, stone)
+e.g can store 2 woods, or 1 wood and 1 stone, but cannot store 1 wood and 2 stones.
+
+
+### Small cellar
+Cost 1 Stone
+Stores food (flour, bread, ham)
+Can store up to 3 food.
+If the cellar is full at the beginning of the turn, +1 prosperity until the end of the turn
+
+### Small church
+Cost 2 stone and 1 wood
+ +1 Prosperity 
+ +1 Permanent influence in this town
+ +1 influence on any nearby town which does not have a church or a cathedral
+
+### Small Grain silo 
+Can store up to 3 Grain
+
+### Mill
+For each worker on the Mill, at EoT:
+1 Wheat -> 1 Flour
+Max number of workers: 3
+Priority: 8
+
+### Oven
+Cost 1 stone
+EoT: for each worker, transforms 2 Flour + 1 Water in 2 Bread
+Max number of workers: 2
+Priority: 7
+
+### Well
+For each worker on the Well, before EoT: get 1 Water which can be immediately used 
+Max number of workers: 2
+Priority: -1
+ 
+  
+## Resource exploitation
+ * Small stone quarry
+ * Wood cutting
+ * Field (wheat)
+ 
+### Small stone quarry
+If the stone quarry has at least two workers at EoT: Add 1 stone to the warehouse
+Priority: 9
+
+### Small Wood exploitation
+For each worker, at EoT:
+Add 1 Wood to the warehouse
+Max 2 workers
+Priority: 9
+
+### Field
+For each worker, at EoT: add 1 Wheat to the grain silo
+Max 3 workers
+Priority: 9
+
+## Town figures
+Each town has a governor.
+The governors for now all have the same abilities:
+ - activate to do as many of the following actions
+    * do worker placement (move workers between activities)
+    * modify building queue order
+ 
+ - All buildings are on the wishlist of this governor 
+    (unique buildings may only be built once)
+    
+## End of turn
+At the end of each turn several update take place in the following order:
+ 
+ - Trigger end of turn abilities for each building in the priority order 
+ - Food consumption
+ For each worker, remove one food. If there is not enough food, for each missing food, -1 prosperity for this turn.
+ If there is food surplus, store it in the cellar. Any remaining food is discarded.
+ 
+ - population growth
+  population <= population + prosperity    
+  Ajust number of workers:
+  number of workers = floor(population / 10)
+  If the number of workers decreases, prompt the player to choose the worker(s) to remove.  
+ 
+ - Collect gold
+ For each village where you have two or more influence, gain 1 gold.
+ 
+  
+### Trigger end of turn abilities for each building
+
+#############
+# Dev Phase 2
+############# 
+
+## Agents 
+ Trader
+ 
+## Adjusting population growth
+Add population thresholds which diminish the growth and income to account for the city overhead. 
+
+## End of turn
+Money collection is dependent on the size of the "town"
+    - Village: 1 gold
+    - Small town: 1 gold
+    - Large town: 2 gold
+    - city: 3 gold
+    
+## Buildings
+    
+### Fountain
+Cost 2 Stones
++1 prosperity
+Add 1 water before EoT
+Priority: -1 
+    
+### Cathedral
+Prerequisit: town size is at least "large town"
+
+Cost 6 Stones and 2 Woods
++2 prosperity
++2 permanent influence on this city
++2 influence on any neighbouring city which does not have a cathedral nor a church
++1 influence on any neighbouring city which has a church but no cathedral
+

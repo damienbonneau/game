@@ -257,3 +257,12 @@ total number of workers in the city.
  +2 influence on the city where the cathedral has been built
  
  
+# Settlement prosperity
+The prosperity threshold to reach the next level increases if there is already a large settlement
+Village -> +1 if there is at least one nearby town. 
+  +2 instead if there is a neighbouring city 
+
+Town -> city: +1 if there is a neighbouring city  
+ 
+ 
+ 
