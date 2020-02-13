@@ -38,14 +38,14 @@ def main_loop(world, screen, screen_size):
                 
                 if e.button == 1:
                     pos = pg.mouse.get_pos()
-                    print camera.pix_to_position( pos)
+                    print (camera.pix_to_position( pos))
                 elif e.button == 4 : #Wheel-UP
-                    print "Wheel up"
+                    print ("Wheel up")
                 
                 elif e.button == 5 : #Wheel-down
-                    print "Wheel down"
+                    print ("Wheel down")
                 else:
-                    print "click %d" % e.button       
+                    print ("click %d" % e.button )
         
         ## Highlighting the current object
         if highlighted_object!= None:

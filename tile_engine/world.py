@@ -32,7 +32,7 @@ class World(object):
         plan = o.plan
         if plan not in self.objects.keys():
             self.objects[plan] = SortedCollection(key = lambda o: o.position)
-            self.plans = self.objects.keys()
+            self.plans = list(self.objects.keys())
             self.plans.sort()
             
         self.objects[plan].insert(o)        
@@ -67,8 +67,8 @@ class World(object):
             all_rects = [o.get_rect() for o in objects]
             indices = rect.collidelistall(all_rects)
             for r in all_rects:
-                print r.x, r.y, r.w, r.h
+                print (r.x, r.y, r.w, r.h)
             results[plan] = [objects[i] for i in indices]
          
-        print rect.x, rect.y, len(objects)
+        print (rect.x, rect.y, len(objects))
         sys.stdout.flush()

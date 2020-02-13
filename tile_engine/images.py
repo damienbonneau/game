@@ -27,7 +27,7 @@ def highlight_surface(img, a = 40):
 def load_image(name, extension = 'png', colorkey = -1):
     img_path = os.path.join(IMGDIR,'{}.{}'.format(name, extension))
     image = pg.image.load(img_path).convert()
-    print 'called load image'
+    print ('called load image')
     if colorkey is not None:
         if colorkey is -1:
             colorkey = image.get_at((0,0))
