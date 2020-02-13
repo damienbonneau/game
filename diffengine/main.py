@@ -138,7 +138,7 @@ class CommModule():
             "BRM": self.branch_msb,
             "BRL": self.branch_lsb,
             "RSHIFT": lambda rshift(self.register),
-            "LSHIFT": lambda rshift(self.register),
+            "LSHIFT": lambda lshift(self.register),
         }
         
     def branch_msb(self, stack_index):
@@ -165,6 +165,9 @@ class CommModule():
         
     def save_to_ram(self, i):
         self.ram[i] = _reg_to_int(self.buffer)
+        
+    def set_prog_line(i, instruction):
+        self.program[i] = instruction
         
     def read(self, size=1):
         """
@@ -232,7 +235,6 @@ class CommModule():
         # Branching
         BRCHMSB <program stack line index> - branch to program stack line if the most significant bit of the register is set to 1
         BRCHLSB <program stack line index> - branch to program stack line if the least significant bit of the register is set to 1
-        
         BUF keyword can be used in place of any integer arguments. This takes the value in the buffer
         
         """

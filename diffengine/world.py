@@ -7,11 +7,25 @@ class World(object):
     Stores all the objects and has methods to access them
     '''
     
-    def __init__(self, objects):
+    def __init__(self, objects=[]):
         self.objects = {} # plan : list of objects in the plan
         self.plans = []
+        self.add_objects(objects)
+        self.active_object = None
+    
+    def add_objects(self, objects):
         for o in objects:
             self.add_object(o)        
+        
+    
+   
+    def activate(self, o):
+        if self.active_object is not None:
+            self.active_object.deactivate()
+            
+        self.active_object = o
+        if self.active_object is not None:
+            self.active_object.activate()
      
     def tick(self):
         for l in self.objects.values():
@@ -28,7 +42,7 @@ class World(object):
             objects_in_plan = self.objects[p]
             for o in objects_in_plan:
                 if o.collides(position):
-                    return o
+                    return o.select(position)
                     
         return None            
             

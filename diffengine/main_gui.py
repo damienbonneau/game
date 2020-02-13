@@ -8,8 +8,9 @@ def display_scene(camera, world, surface, background):
     objects = world.get_objects_ordered_for_display(rect)
     xc, yc = camera.get_position()
     for o in objects:
-        xo, yo = o.get_position()
-        surface.blit(o.get_surface(), (xo-xc, yo-yc))
+        o.draw(surface, xc, yc)
+        # xo, yo = o.get_position()
+        # surface.blit(o.get_surface(), (xo-xc, yo-yc))
     
      
 def main_loop(world, screen, screen_size):
@@ -21,7 +22,6 @@ def main_loop(world, screen, screen_size):
     
     camera = Camera(screen.get_rect())
     font = pg.font.SysFont("Courier New", 32, bold=True)
-    active_object = None
     hover_object = None
     
     while 1:
@@ -40,14 +40,8 @@ def main_loop(world, screen, screen_size):
                 if e.button == 1:
                     pos = pg.mouse.get_pos()
                     
-                    # Deactivate previous object
-                    if active_object is not None:
-                        active_object.deactivate()
-                    
-                    active_object = world.select_at(camera.pix_to_position(pg.mouse.get_pos()))
-                    # Activate new one
-                    if active_object is not None:
-                        active_object.activate()
+                    world.active_object = world.select_at(camera.pix_to_position(pg.mouse.get_pos()))
+                    world.activate(world.active_object)
                     
                 elif e.button == 4 : #Wheel-UP
                     print ("Wheel up")
@@ -57,8 +51,8 @@ def main_loop(world, screen, screen_size):
                 else:
                     print ("click %d" % e.button )
             
-            if active_object:
-                active_object.handle_event(e)
+            if world.active_object:
+                world.active_object.handle_event(e)
         
         ## Highlighting the current object
         if hover_object!= None:
@@ -107,11 +101,16 @@ if __name__ == "__main__":
     A small example with hexagonal tiles and some units
     '''
     
-    from entity import InputBox
+    from entity import InputBox, ColumnInputBoxes
     from world import World
     screen, screen_size = init_pg() 
-    text_boxes = [InputBox(10, y, 500, 20) for y in [10, 30, 50, 70, 90, 110]]
-    world = World(objects = text_boxes)
+    # text_boxes = [InputBox((10, y), 500, 20) for y in [10, 30, 50, 70, 90, 110]]
+    
+    
+    
+    world = World()
+    text_boxes = [ColumnInputBoxes(activate_callback=world.activate)]
+    world.add_objects(text_boxes)
     main_loop(world, screen, screen_size)
         
             
