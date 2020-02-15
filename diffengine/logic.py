@@ -206,8 +206,8 @@ class Processor():
             "BCPY": [2],
             "BFLP": [1],
             "BXOR": [2],
-            "BRM": [0],
-            "BRL": [0],
+            "BRM": [1],
+            "BRL": [1],
             "RSH": [0],
             "LSH": [0],
         }
@@ -281,6 +281,9 @@ class Processor():
             return VALID_SYNTAX
             
         splitted = instruction_line.replace('\n','').strip().split(' ')
+        
+        splitted = [_x for _x in splitted if len(_x)>0]
+        
         if len(splitted) == 0:
             return VALID_SYNTAX
             
