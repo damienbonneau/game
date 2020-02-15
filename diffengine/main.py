@@ -1,8 +1,8 @@
 import pygame as pg
 import sys
 from camera import Camera
-from logic import Processor
-from entity import InputBox, ProcessorGUI
+from logic import Processor, Logger, Stream, RandomSource, ShiftRegister, connect
+from entity import InputBox, ProcessorGUI, LoggerGUI, SourceGUI, ShiftRegisterGUI
 from world import World
 
 def display_scene(camera, world, surface, background):    
@@ -125,11 +125,26 @@ def init_pg():
 if __name__ == "__main__":
     screen, screen_size = init_pg() 
     
+    logger = Logger()
+    logger_gui = LoggerGUI(logger=logger)
+    
+    source = RandomSource()
+    source_gui = SourceGUI(source=source, position=(-200, 200))
+    
+    shift_reg = ShiftRegister(size=16)    
+    shift_register_gui = ShiftRegisterGUI(shift_register=shift_reg,
+        position=(-180, 200))
+    
     processor = Processor()
     world = World()
+       
+    connect(source, shift_reg)
+    connect(shift_reg, processor)
+    connect(processor, logger)
     
-    text_boxes = [ProcessorGUI(processor=processor, activate_callback=world.activate)]
-    world.add_objects(text_boxes)
+    processor_gui = ProcessorGUI(processor=processor, activate_callback=world.activate)    
+    world.add_objects([source_gui, shift_register_gui, processor_gui, logger_gui])
+    
     main_loop(world, screen, screen_size)
         
             

@@ -42,8 +42,6 @@ Compression
 Communication protocols
 Encryption
 Hacking
-
-
 """
 from random import randint
 import sys
@@ -125,37 +123,89 @@ def pull_reg_from_ram(reg, ram, address):
     reg[:] = _int_to_reg(ram[address])
 
 
+class __IOdevice__():
+    def connect_input(self, input_stream):
+        self.input_stream = input_stream
+        
+    def connect_output(self, output_stream):
+        self.output_stream = output_stream
+
+
+class ShiftRegister(__IOdevice__):
+    def __init__(self, size, input_stream=None, output_stream=None):
+        self.size = size
+        self.buffer = [None] * self.size
+        self.input_stream = input_stream
+        self.output_stream = output_stream
+        
+    def tick(self):
+        if self.buffer[-1] is not None:
+            self.output_stream.send(self.buffer[-1])
+            
+        self.buffer[1:] = self.buffer[:-1]
+        if self.input_stream.has_data:
+            self.buffer[0] = self.input_stream.receive()
+        else:
+            self.buffer[0] = None
+        
 class Stream():
     def __init__(self):
         self.data = []
         
     def send(self, x):
-        self.data.insert(0, x)
+        if type(x) is list:
+            self.data = x + self.data
+        else:
+            self.data.insert(0, x)
+    
+    def has_data(self):
+        return len(self.data) > 0
     
     def receive(self):
         return self.data.pop()
         
+    def receive_all(self):
+        return self.data
+        
+    def clear(self):
+        self.data.clear()
+        
     def tick(self):
         pass
 
-class RandomSource():
-    def __init__(self, output_stream):
+class RandomSource(__IOdevice__):
+    def __init__(self, output_stream=None):
         self.output_stream = output_stream
      
     def tick(self):
         self.output_stream.send(randint(0, 1))
         
-class Logger():
-    def __init__(self, input_stream):
+class Logger(__IOdevice__):
+    def __init__(self, input_stream=None, max_nb_symbols=240):
         self.input_stream = input_stream
         self.log = []
+        self.max_nb_symbols = max_nb_symbols
+        self.received = False
         
     def tick(self):
-        if input_stream:
-            self.log += input_stream
-            input_stream.clear()
+        n = len(self.log)
+        data = self.input_stream.receive_all()
+        m = len(data)
+        
+        self.received = False
+        if m >0:
+            self.received = True
+        
+        for i in range(n + m - self.max_nb_symbols):
+            self.log.pop(0)
+            
+        self.log += data
+        self.input_stream.clear()
     
-class Processor():
+    def clear(self):
+        self.log.clear()
+    
+class Processor(__IOdevice__):
     """
     Composed of:
         - a register
@@ -224,13 +274,7 @@ class Processor():
         b = self.buffer 
         self.buffer[:] = self.register[:]
         self.register[:] = b
-        
-    def connect_input(self, input_stream):
-        self.input_stream = input_stream
-        
-    def connect_output(self, output_stream):
-        self.output_stream = output_stream
-        
+          
     def load_from_ram(self, i):
         self.buffer[:] = _int_to_reg(self.ram[i])
         
@@ -249,12 +293,12 @@ class Processor():
         [LSB, ..., MSB] <- the register stores the bits backwards to help with the inner machinery
         
         """
-        if len(input_stream.data) < size:
+        if len(self.input_stream.data) < size:
             return NO_DATA
             
         i = 0
         while i < size:        
-            self.register[i] = input_stream.receive()
+            self.register[i] = self.input_stream.receive()
             i += 1
         
         return 0
@@ -343,6 +387,7 @@ class Processor():
             return
         
         splitted = instruction_line.replace('\n','').split(' ')
+        splitted = [_x for _x in splitted if len(_x)>0]
         operator = splitted[0]
         
         arguments = [int(x) if x != 'BUF' else _reg_to_int(self.buffer) for x in splitted[1:]]                        
@@ -366,3 +411,7 @@ class Processor():
         if self.stack_pointer >= len(self.program):
             self.stack_pointer = 0
 
+def connect(device1, device2):
+    conn = Stream()
+    device1.connect_output(conn)
+    device2.connect_input(conn)

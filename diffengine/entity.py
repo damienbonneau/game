@@ -184,23 +184,20 @@ class RegisterGUI(Entity):
         pg.draw.rect(self.surface, self.COLOR_BORDER, self.bbrect, 3)
     
     def set_digit(self, i, digit):
-        self.digits[i] = digit
+        self.digits[n - 1 - i] = digit
         self.update_surface()
         
     def set_digits(self, list_digits):
-        self.digits = list_digits
+        _digits = list_digits[:]
+        _digits.reverse()
+        self.digits = _digits
         self.update_surface()
         
     def update_surface(self):
         self.init_surface()
         
         for i,d in enumerate(self.digits):
-            self.surface.blit(self.digits_to_surf[d], (self.w*i+ 2, 1))
-        
-        
-    # def set_digit(self, i, digit):
-        # self.surface.blit(self.digits_to_surf[digit], (w*i, 0))
-        
+            self.surface.blit(self.digits_to_surf[d], (self.w*i+ 2, 1))     
     
     def activate(self):
         pass
@@ -209,7 +206,8 @@ class RegisterGUI(Entity):
         pass
         
 COLOR_BORDER_EXEC = pg.Color('cyan')
-COLOR_BORDER_ERROR = pg.Color('red')
+COLOR_BORDER_ERROR_INACTIVE = pg.Color('darkred')
+COLOR_BORDER_ERROR_ACTIVE = pg.Color('red')
 COLOR_INACTIVE = pg.Color('darkgreen')
 COLOR_ACTIVE = pg.Color('green')
 COLOR_BORDER_INACTIVE = pg.Color('gray21')
@@ -218,7 +216,17 @@ COLOR_BORDER_ACTIVE = pg.Color('gray66')
 class InputBox(Entity):
     def __init__(self, position, w, h, text='', plan=1, max_length_text=12, line_index=0):
         
-        self.color_border = COLOR_BORDER_INACTIVE
+        self.active_status = 0 # 1 for acti
+        self.syntax_status = 0 # 0 OK, 1 ERROR
+        
+        self.color_borders_error = [COLOR_BORDER_ERROR_INACTIVE, COLOR_BORDER_ERROR_ACTIVE]
+        self.color_borders_ok = [COLOR_BORDER_INACTIVE, COLOR_BORDER_ACTIVE]
+        self.color_borders_exec = [COLOR_BORDER_EXEC, COLOR_BORDER_EXEC]
+        
+        self.color_borders = self.color_borders_ok
+        
+        self.text_colors = [COLOR_INACTIVE, COLOR_ACTIVE]
+        
         self.color = COLOR_INACTIVE
         self.FONT = pg.font.Font(pg.font.match_font("consolas"), 12)
         self.max_length_text = max_length_text
@@ -239,17 +247,35 @@ class InputBox(Entity):
         self.text = text
         self.active = False
         self.update_surface()
+        
+        
 
     def activate(self):
         super(InputBox, self).activate()
-        self.color = COLOR_ACTIVE 
-        self.color_border = COLOR_BORDER_ACTIVE 
+        self.active_status = 1       
         self.update_surface()
         
     def deactivate(self):
         super(InputBox, self).deactivate()
-        self.color = COLOR_INACTIVE
-        self.color_border = COLOR_BORDER_INACTIVE
+        self.active_status = 0
+        self.update_surface()
+        
+    def set_status_exec(self):
+        self.color_borders = self.color_borders_exec
+        self.update_surface()
+        
+    def unset_status_exec(self):
+        self.color_borders = self.color_borders_error if self.syntax_status else self.color_borders_ok
+        self.update_surface()
+        
+    def set_status_invalid_syntax(self):
+        self.syntax_status = 1
+        self.color_borders = self.color_borders_error
+        self.update_surface()
+    
+    def set_status_valid_syntax(self):
+        self.syntax_status = 0
+        self.color_borders = self.color_borders_ok
         self.update_surface()
 
     def handle_event(self, event):       
@@ -283,13 +309,133 @@ class InputBox(Entity):
 
     def update_surface(self):
         surface = pg.Surface((self.rect.width, self.rect.height))
-        self.txt_surface = self.FONT.render(self.text, True, self.color)  
+        self.txt_surface = self.FONT.render(self.text, True, self.text_colors[self.active_status])  
         surface.blit(self.txt_surface, (5, 5))
-        pg.draw.rect(surface, self.color_border, self.bbrect, 1)
+        pg.draw.rect(surface, self.color_borders[self.active_status], self.bbrect, 1)
         self.set_surface(surface)
         
     def update(self):
         pass
+        
+class LoggerGUI(Entity):
+    def __init__(self, logger, display_block_size=8, position=(200, 200), w=384, h = 200):
+        self.FONT = pg.font.Font(pg.font.match_font("consolas"), 12)
+        self.surface = pg.Surface((w, h))
+        self.display_block_size = display_block_size
+        
+        super(LoggerGUI, self).__init__(surface=self.surface, position=position)
+        self.COLOR_BCKGND = (20, 20, 20)
+        self.COLOR_DIGIT = pg.Color('cyan')
+        self.bbrect = pg.Rect(0,0, w, h)
+        
+        self.digits_to_surf = {i :self.FONT.render(f"{i}", True, self.COLOR_DIGIT) for i in [0, 1]}
+        self.logger = logger
+        self.update_surface()
+        
+    def update_surface(self):
+        self.surface.fill(self.COLOR_BCKGND)
+        pg.draw.rect(self.surface, COLOR_BORDER_INACTIVE, self.bbrect, 1)
+        
+        cw = 10
+        ch = 20
+        n_cols = 20
+        n_lines = 10
+        i = 0
+        j = 0
+        _blk_size = 0
+        for d in self.logger.log:
+            self.surface.blit(self.digits_to_surf[d], (cw * i + 2, ch * j + 2 ))
+            _blk_size += 1
+            i += 1
+            if _blk_size == self.display_block_size:
+                i += 1
+                _blk_size = 0
+                
+            if i >= 27:
+                i = 0
+                j += 1
+    
+    def tick(self):
+        self.logger.tick()
+        if self.logger.received:
+            self.update_surface()
+    
+    def highlight(self):
+        pass
+        
+    def unhighlight(self):
+        pass
+        
+class ShiftRegisterGUI(Entity):
+    def __init__(self, shift_register, position=(-100, 200), h=20):
+        self.FONT = pg.font.Font(pg.font.match_font("consolas"), 12)
+        cw = 10
+        self.shift_register = shift_register
+        self.cw = cw
+        w = self.shift_register.size * cw
+        self.surface = pg.Surface((w, h))
+        super(ShiftRegisterGUI, self).__init__(surface=self.surface, position=position)
+        self.COLOR_BCKGND = (20, 20, 20)
+        self.COLOR_DIGIT = pg.Color('cyan')
+        self.bbrect = pg.Rect(0,0, w, h)
+        
+        self.digits_to_surf = {i :self.FONT.render(f"{i}", True, self.COLOR_DIGIT) for i in [0, 1]}
+        self.update_surface()
+        
+    def update_surface(self):
+        self.surface.fill(self.COLOR_BCKGND)
+        pg.draw.rect(self.surface, COLOR_BORDER_INACTIVE, self.bbrect, 1)
+        
+        cw = 10
+        ch = 20
+        n_cols = 20
+        n_lines = 10
+        i = 0
+        j = 0
+        _blk_size = 0
+        for d in self.shift_register.buffer:
+            if d != None:
+                self.surface.blit(self.digits_to_surf[d], (cw * i + 2, ch * j + 2 ))
+            i += 1
+            
+    def tick(self):
+        self.shift_register.tick()
+        self.update_surface()
+    
+    def highlight(self):
+        pass
+        
+    def unhighlight(self):
+        pass
+        
+COLOR_CYAN = pg.Color('cyan')
+class SourceGUI(Entity):
+    def __init__(self, source, position=(-200, 200), w = 20, h=20):
+        self.FONT = pg.font.Font(pg.font.match_font("consolas"), 12)
+        self.surface = pg.Surface((w, h))
+        super(SourceGUI, self).__init__(surface=self.surface, position=position)
+        self.COLOR_BCKGND = (20, 20, 20)
+        
+        self.bbrect = pg.Rect(0,0, w, h)
+        
+        self.sym_to_surf = {i :self.FONT.render(f"{i}", True, COLOR_CYAN) for i in [0, 1, 'S']}
+        self.source = source
+        self.update_surface()
+        
+    def update_surface(self):
+        self.surface.fill(self.COLOR_BCKGND)
+        pg.draw.rect(self.surface, COLOR_CYAN, self.bbrect, 4)
+        self.surface.blit(self.sym_to_surf['S'], (5, 5 ))
+            
+    def tick(self):
+        self.source.tick()
+    
+    def highlight(self):
+        pass
+        
+    def unhighlight(self):
+        pass
+    
         
 class ProcessorGUI(Container):
     def __init__(
@@ -314,8 +460,9 @@ class ProcessorGUI(Container):
                 _print(text, i, line_status)
                 self.processor.set_prog_line(i, text)
                 if line_status != lg.VALID_SYNTAX:
-                    inputbox.color_border = COLOR_BORDER_ERROR
-                    
+                    inputbox.set_status_invalid_syntax()
+                else:
+                    inputbox.set_status_valid_syntax()
             _inputbox.set_text_callback = set_text_callback
             
             
@@ -339,12 +486,10 @@ class ProcessorGUI(Container):
         pass
             
     def tick(self):
-        self.current_line.color_border = COLOR_BORDER_INACTIVE
-        self.current_line.update_surface()
+        self.current_line.unset_status_exec()
         self.processor.tick()
         self.current_line = self.lines[self.processor.stack_pointer]
-        self.current_line.color_border = COLOR_BORDER_EXEC
-        self.current_line.update_surface()
+        self.current_line.set_status_exec()
         
         self.register_gui.set_digits(self.processor.register)
         
@@ -355,4 +500,4 @@ class ProcessorGUI(Container):
     def get_program(self):
         return [l.text for l in self.lines]
     
-    
+
