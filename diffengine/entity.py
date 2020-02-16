@@ -4,7 +4,10 @@ import pygame as pg
 import sys
 
 def _print(*a, **kw):
-    print(*a, **kw)
+    try:
+        print(*a, **kw)
+    except:
+        pass
     sys.stdout.flush()
 
 import logic as lg    
@@ -296,7 +299,10 @@ class InputBox(Entity):
                     self.text = self.text[:-1]
                 else:
                     if len(self.text) < self.max_length_text:
-                        self.text += event.unicode
+                        try:
+                            self.text += event.unicode
+                        except:
+                            pass
                         
                 self.text = self.text.upper()
                 self.set_text_callback(self)  
