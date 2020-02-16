@@ -69,10 +69,10 @@ def bit_xor(register, src1, src2):
     """
     register[src2] = (register[src1] + register[src2]) % 2
     
-def rshift(r):
+def lshift(r):
     r[:] = [r[-1]] + r[:-1]
 
-def lshift(r):
+def rshift(r):
     r[:] = r[1:] + [r[0]]
     
 def xor(registerA, registerB):
@@ -123,28 +123,63 @@ def pull_reg_from_ram(reg, ram, address):
     reg[:] = _int_to_reg(ram[address])
 
 
-class __IOdevice__():
-    def connect_input(self, input_stream):
-        self.input_stream = input_stream
+class Terminal():
+    """
+    A terminal port which stores one symbol value
+    Simulates concurrent execution, by:
+        - reading from current value
+        - setting the value for the next tick
+  
+    """
+    def __init__(self, value=None):
+        self.value = value
+        self._value_next = value
+                  
+    def set_value(self, value):
+        self._value_next = value
         
-    def connect_output(self, output_stream):
-        self.output_stream = output_stream
+    def read_value(self):
+        return self.value
+        
+    def send(self, s):
+        return self.set_value(s)
+        
+    def receive(self):
+        return self.read_value()
+        
+    def tick(self):
+        self.value = self._value_next
+        self.reset()
+        
+    def reset(self):
+        self._value_next = None
+        
+    def has_data(self):
+        return self.value is not None
+
+class __IOdevice__():
+    def connect_input(self, input):
+        self.input = input
+        
+    def connect_output(self, output):
+        self.output = output
 
 
 class ShiftRegister(__IOdevice__):
-    def __init__(self, size, input_stream=None, output_stream=None):
+    def __init__(self, size, input=None, output=None):
         self.size = size
         self.buffer = [None] * self.size
-        self.input_stream = input_stream
-        self.output_stream = output_stream
+        
+        self.input = input
+        self.output = output
         
     def tick(self):
         if self.buffer[-1] is not None:
-            self.output_stream.send(self.buffer[-1])
+            self.output.send(self.buffer[-1])
             
         self.buffer[1:] = self.buffer[:-1]
-        if self.input_stream.has_data:
-            self.buffer[0] = self.input_stream.receive()
+        if self.input.has_data:
+            self.buffer[0] = self.input.receive()
         else:
             self.buffer[0] = None
         
@@ -174,13 +209,37 @@ class Stream():
         pass
 
 class RandomSource(__IOdevice__):
-    def __init__(self, output_stream=None):
-        self.output_stream = output_stream
+    def __init__(self, output=None):
+        self.output = output
      
     def tick(self):
-        self.output_stream.send(randint(0, 1))
-        
+        self.output.send(randint(0, 1))
+  
 class Logger(__IOdevice__):
+    def __init__(self, input=None, max_nb_symbols=240, log_blank=False):
+        self.input = input
+        self.log = []
+        self.max_nb_symbols = max_nb_symbols
+        self.received = False
+        self.log_blank = log_blank
+        
+    def tick(self):
+        n = len(self.log)
+        data = self.input.receive()
+        self.received = False
+        if self.log_blank or data is not None:
+            self.received = True
+        
+        if self.received:
+            if n == self.max_nb_symbols:
+                self.log.pop(0)
+                
+            self.log.append(data)
+    
+    def clear(self):
+        self.log.clear()
+  
+class LoggerStream(__IOdevice__):
     def __init__(self, input_stream=None, max_nb_symbols=240):
         self.input_stream = input_stream
         self.log = []
@@ -293,13 +352,17 @@ class Processor(__IOdevice__):
         [LSB, ..., MSB] <- the register stores the bits backwards to help with the inner machinery
         
         """
-        if len(self.input_stream.data) < size:
+        data = self.input.receive()
+        if data is None:
             return NO_DATA
+
             
-        i = 0
-        while i < size:        
-            self.register[i] = self.input_stream.receive()
-            i += 1
+        # if len(self.input.data) < size:
+        self.register[-1] = data
+        # i = 0
+        # while i < size:        
+            # self.register[i] = self.input_stream.receive()
+            # i += 1
         
         return 0
         
@@ -312,10 +375,12 @@ class Processor(__IOdevice__):
         send from LSB (least significant) to MSB 
         """
         
-        if size is None:
-            size = len(self.register)
-        for i in range(size):
-            self.output_stream.send(self.register[i])
+        self.output.send(self.register[0])
+        
+        # if size is None:
+            # size = len(self.register)
+        # for i in range(size):
+            # self.output_stream.send(self.register[i])
     
     def reset_reg(self):
         self.register[:] = [0] * self.register_size
@@ -411,7 +476,12 @@ class Processor(__IOdevice__):
         if self.stack_pointer >= len(self.program):
             self.stack_pointer = 0
 
+TERMINALS = []
+
 def connect(device1, device2):
-    conn = Stream()
-    device1.connect_output(conn)
-    device2.connect_input(conn)
+    global TERMINALS
+    terminal = Terminal()
+    TERMINALS.append(terminal)
+    # conn = Stream()
+    device1.connect_output(terminal)
+    device2.connect_input(terminal)

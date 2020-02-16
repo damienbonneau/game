@@ -1,7 +1,7 @@
 import pygame as pg
 import sys
 from camera import Camera
-from logic import Processor, Logger, Stream, RandomSource, ShiftRegister, connect
+from logic import Processor, Logger, RandomSource, ShiftRegister, connect, TERMINALS
 from entity import InputBox, ProcessorGUI, LoggerGUI, SourceGUI, ShiftRegisterGUI
 from world import World
 
@@ -109,6 +109,9 @@ def main_loop(world, screen, screen_size):
             world.tick()
             world_tick_incr = 0
             
+            for _terminal in TERMINALS:
+                _terminal.tick()
+            
         world_tick_incr += 1
         
 def init_pg():
@@ -144,7 +147,6 @@ if __name__ == "__main__":
     
     processor_gui = ProcessorGUI(processor=processor, activate_callback=world.activate)    
     world.add_objects([source_gui, shift_register_gui, processor_gui, logger_gui])
-    
     main_loop(world, screen, screen_size)
         
             
