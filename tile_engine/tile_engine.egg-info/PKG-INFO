@@ -1,0 +1,11 @@
+Metadata-Version: 1.2
+Name: tile-engine
+Version: 0.1.0
+Summary: A small tile engine based on pygame
+Home-page: UNKNOWN
+Author: Damien Bonneau
+Author-email: damien.bonneau2@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires-Python: >=3.6
